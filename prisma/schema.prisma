@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model user {
+  id_user   Int         @id @default(autoincrement())
+  nama_user String      @default("")
+  role      role
+  username  String      @default("")
+  password  String      @default("")
+  createAt  DateTime    @default(now())
+  updateAt  DateTime    @updatedAt
+  transaksi transaksi[]
+}
+
+model transaksi {
+  id_transaksi     Int                @id @default(autoincrement())
+  tgl_transaksi    String             @default("")
+  id_user          Int                @default(0)
+  id_meja          Int                @default(0)
+  nama_pelanggan   String             @default("")
+  status           status
+  total_bayar      Int                @default(0)
+  createAt         DateTime           @default(now())
+  updateAt         DateTime           @updatedAt
+  detail_transaksi detail_transaksi[]
+  meja_id          meja               @relation(fields: [id_meja], references: [id_meja])
+  user             user               @relation(fields: [id_user], references: [id_user])
+
+  @@index([id_meja], map: "transaksi_id_meja_fkey")
+  @@index([id_user], map: "transaksi_id_user_fkey")
+}
+
+model detail_transaksi {
+  id_detail_transaksi Int       @id @default(autoincrement())
+  id_transaksi        Int       @default(0)
+  id_menu             Int       @default(0)
+  harga               Int       @default(0)
+  quantity            Int       @default(0)
+  createAt            DateTime  @default(now())
+  updateAt            DateTime  @updatedAt
+  menu                menu      @relation(fields: [id_menu], references: [id_menu])
+  transaksi           transaksi @relation(fields: [id_transaksi], references: [id_transaksi])
+
+  @@index([id_menu], map: "detail_transaksi_id_menu_fkey")
+  @@index([id_transaksi], map: "detail_transaksi_id_transaksi_fkey")
+}
+
+model meja {
+  id_meja     Int         @id @default(autoincrement())
+  nomor_meja  String      @default("")
+  status_meja status_meja
+  createAt    DateTime    @default(now())
+  updateAt    DateTime    @default(now()) @updatedAt
+  transaksi   transaksi[]
+}
+
+model menu {
+  id_menu          Int                @id @default(autoincrement())
+  nama_menu        String             @default("")
+  jenis            jenis
+  deskripsi        String             @default("")
+  gambar           String             @default("")
+  harga            Int                @default(0)
+  stok             Int                @default(0)
+  createAt         DateTime           @default(now())
+  updateAt         DateTime           @default(now()) @updatedAt
+  detail_transaksi detail_transaksi[]
+}
+
+enum role {
+  manajer
+  admin
+  kasir
+}
+
+enum status {
+  belum
+  lunas
+}
+
+enum jenis {
+  makanan
+  minuman
+}
+
+enum status_meja {
+  tersedia
+  taksedia
+}
